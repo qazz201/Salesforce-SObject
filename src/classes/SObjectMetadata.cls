@@ -3,44 +3,79 @@
  */
 
 public with sharing class SObjectMetadata {
+    private String sObjectApiName;
+    private DescribeFieldResult sObjectFieldDescribe;
 
-    public static String getName(SObject sobj) {
-        return sobj.getSObjectType().getDescribe().getName();
+    public SObjectMetadata(SObject sobj) {
+        this.sObjectApiName = sobj.getSObjectType().getDescribe().getName();
     }
 
-    public static String getName(String sobjName) {
-        return getName(Type.forName(sobjName));
+    public SObjectMetadata(Type sobjType) {
+        this.sObjectApiName = sobjType.getName();
     }
 
-    public static String getName(Type sobjType) {
-        return sobjType.getName();
+    public SObjectMetadata(String sobjName) {
+        this(Type.forName(sobjName));
     }
 
-    public static String getFieldName(SObjectField sobjField) {
-        return getFieldDescribe(sobjField).getName();
+    public SObjectMetadata(SObjectField sobjField) {
+        this.sObjectFieldDescribe = sobjField.getDescribe();
     }
 
-    public static String getFieldLabel(SObjectField sobjField) {
-        return getFieldDescribe(sobjField).getLabel();
+    ///////////// Object /////////////////////////////////////////////////////////////////////////////////////////////// 
+    public String getSObjectApiName() {
+        return this.sObjectApiName;
     }
 
-    public static String getFieldType(SObjectField sobjField) {
-        return String.valueOf(getFieldDescribe(sobjField).getType());
+    ///////////// Fields ///////////////////////////////////////////////////////////////////////////////////////////////
+    public String getFieldApiName() {
+        return this.sObjectFieldDescribe.getName();
     }
 
-    public static List<String> getFieldPicklistValues(SObjectField sobjField) {
-        List<PicklistEntry> picklistEntries = getFieldDescribe(sobjField).getPicklistValues();
-        List<String> result = new List<String>();
+    public String getFieldLabel() {
+        return this.sObjectFieldDescribe.getLabel();
+    }
+
+    public String getFieldType() {
+        return this.sObjectFieldDescribe.getType().name();
+    }
+
+    public List<String> getFieldPicklistValues() {
+        return (List<String>) this.getPicklistEntryValues(this.sObjectFieldDescribe.getPicklistValues(), false);
+    }
+
+    public List<PicklistEntryData> getFieldPicklistOptions() {
+        return (List<PicklistEntryData>)(Object)this.getPicklistEntryValues(this.sObjectFieldDescribe.getPicklistValues(), true);
+    } 
+
+
+    ///////////// Utility //////////////////////////////////////////////////////////////////////////////////////////////   
+    private List<Object> getPicklistEntryValues(List<PicklistEntry> picklistEntries, Boolean grouping) {
+        List<Object> result = new List<Object>();
 
         for (PicklistEntry entry : picklistEntries) {
-            result.add(entry.getValue());
+            if (grouping == true) {
+                result.add(new PicklistEntryData(entry));
+            } else {
+                result.add(entry.getValue());
+            }
         }
 
         return result;
     }
 
 
-    private static DescribeFieldResult getFieldDescribe(SObjectField sobjField) {
-        return sobjField.getDescribe();
+    public class PicklistEntryData {
+        @AuraEnabled public Boolean isActive;
+        @AuraEnabled public Boolean isDefaultValue;
+        @AuraEnabled public String label;
+        @AuraEnabled public String value;
+
+        public PicklistEntryData(PicklistEntry picklistEntry) {
+            this.isActive = picklistEntry.isActive();
+            this.isDefaultValue = picklistEntry.isDefaultValue();
+            this.label = picklistEntry.getLabel();
+            this.value = picklistEntry.getValue();
+        }
     }
 }
