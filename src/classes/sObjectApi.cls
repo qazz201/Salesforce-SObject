@@ -17,8 +17,30 @@ public with sharing class sObjectApi {
     }
 
     public static String getSObjectFieldName(SObjectField sobjField) {
-        return sobjField.getDescribe().getName();
+        return getFieldDescribe(sobjField).getName();
+    }
+
+    public static String getSObjectFieldLabel(SObjectField sobjField) {
+        return getFieldDescribe(sobjField).getLabel();
+    }
+
+    public static String getSObjectFieldType(SObjectField sobjField) {
+        return String.valueOf(getFieldDescribe(sobjField).getType());
+    }
+
+    public static List<String> getSObjectFieldPicklistValues(SObjectField sobjField) {
+        List<PicklistEntry> picklistEntries = getFieldDescribe(sobjField).getPicklistValues();
+        List<String> result = new List<String>();
+
+        for (PicklistEntry entry : picklistEntries) {
+            result.add(entry.getValue());
+        }
+
+        return result;
     }
 
 
+    private static DescribeFieldResult getFieldDescribe(SObjectField sobjField) {
+        return sobjField.getDescribe();
+    }
 }
