@@ -9,7 +9,6 @@ public with sharing class SObjectFieldMetadata {
         this.sObjectFieldDescribe = sobjField.getDescribe();
     }
 
-
     ///////////// Methods //////////////////////////////////////////////////////////////////////////////////////////////
     public String getFieldApiName() {
         return this.sObjectFieldDescribe.getName();
@@ -22,7 +21,7 @@ public with sharing class SObjectFieldMetadata {
     public String getFieldType() {
         return this.sObjectFieldDescribe.getType().name();
     }
-
+    
     public List<PicklistEntryData> getFieldPicklistOptions() {
         List<PicklistEntryData> result = new List<PicklistEntryData>();
 
